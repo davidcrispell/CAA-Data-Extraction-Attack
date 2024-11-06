@@ -179,7 +179,7 @@ for data, keys in zip(tqdm(scrub_test_data), data_template):
         prompt = tokenizer.decode(tokenizer(context[-2048:])['input_ids'][-200:])
         test_prompts.append({'idx': idx, 'pii_type_id':pii_type_id, 'label': "", 'pii_type': pii_type, 'prompt': f"{prompt}"})
 
-print(f"Start attacking. Will output to: {output_fname}")
+print(f"Start attacking. Will output to: {output_fname} and {output_fname_result}")
 res_t = {}
 for i, res_dict in enumerate(tqdm(test_prompts)):
     try:
