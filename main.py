@@ -57,22 +57,6 @@ def steer_activations(
 
 res_stream_hook_point = 'blocks.16.hook_resid_post' # Residual stream after all components of the 16th transformer block
 
-name_steering_vector = t.zeros(4096).to("cuda")
-location_steering_vector = t.zeros(4096).to("cuda")
-date_steering_vector = t.zeros(4096).to("cuda")
-phone_steering_vector = t.zeros(4096).to("cuda")
-fax_steering_vector = t.zeros(4096).to("cuda")
-email_steering_vector = t.zeros(4096).to("cuda")
-ssn_steering_vector = t.zeros(4096).to("cuda")
-medical_number_steering_vector = t.zeros(4096).to("cuda")
-health_plan_number_steering_vector = t.zeros(4096).to("cuda")
-account_number_steering_vector = t.zeros(4096).to("cuda")
-license_number_steering_vector = t.zeros(4096).to("cuda")
-vehicle_identifier_steering_vector = t.zeros(4096).to("cuda")
-device_identifier_steering_vector = t.zeros(4096).to("cuda")
-url_steering_vector = t.zeros(4096).to("cuda")
-ip_address_steering_vector = t.zeros(4096).to("cuda")
-
 PII_DESC = {
     "NAME": "Names.",
     "LOC": "All geographical subdivisions smaller than a State, including street address, city, county, precinct, zip code, and their equivalent geocodes, except for the initial three digits of a zip code, if according to the current publicly available data from the Bureau of the Census: (1) The geographic unit formed by combining all zip codes with the same three initial digits contains more than 20,000 people; and (2) The initial three digits of a zip code for all such geographic units containing 20,000 or fewer people is changed to 000.",
@@ -91,25 +75,25 @@ PII_DESC = {
     "IP": "Internet Protocol (IP) address numbers.",
 }
 
-STEERING_VECTORS = {
-    "NAME": name_steering_vector,
-    "LOC": location_steering_vector,
-    "DATE": date_steering_vector,
-    "PHONE": phone_steering_vector,
-    "FAX": fax_steering_vector,
-    "EMAIL": email_steering_vector,
-    "SSN": ssn_steering_vector,
-    "MED_NUM": medical_number_steering_vector,
-    "HPB_NUM": health_plan_number_steering_vector,
-    "ACC": account_number_steering_vector,
-    "LICENSE": license_number_steering_vector,
-    "VEHICLE_ID": vehicle_identifier_steering_vector,
-    "DEVICE_ID": device_identifier_steering_vector,
-    "URL": url_steering_vector,
-    "IP": ip_address_steering_vector
+steering_vectors = {
+    "NAME": t.zeros(4096).to("cuda"),
+    "LOC": t.zeros(4096).to("cuda"),
+    "DATE": t.zeros(4096).to("cuda"),
+    "PHONE": t.zeros(4096).to("cuda"),
+    "FAX": t.zeros(4096).to("cuda"),
+    "EMAIL": t.zeros(4096).to("cuda"),
+    "SSN": t.zeros(4096).to("cuda"),
+    "MED_NUM": t.zeros(4096).to("cuda"),
+    "HPB_NUM": t.zeros(4096).to("cuda"),
+    "ACC": t.zeros(4096).to("cuda"),
+    "LICENSE": t.zeros(4096).to("cuda"),
+    "VEHICLE_ID": t.zeros(4096).to("cuda"),
+    "DEVICE_ID": t.zeros(4096).to("cuda"),
+    "URL": t.zeros(4096).to("cuda"),
+    "IP": t.zeros(4096).to("cuda")
 }
 
-STEERING_CONSTS = {
+steering_consts = {
     "NAME": 0.0,
     "LOC": 0.0,
     "DATE": 0.0,
@@ -130,9 +114,9 @@ STEERING_CONSTS = {
 # Load vectors and constants
 run_id = "2358"
 vec_folder = f"vectors/{run_id}"
-for pii_type, vec in zip(STEERING_VECTORS.keys(), STEERING_VECTORS.values()):
-    STEERING_VECTORS[pii_type] = t.load(os.path.join(vec_folder, f"{pii_type}_{run_id}.pt"))
-STEERING_CONSTS = t.load(os.path.join(vec_folder, f"consts_{run_id}.pt"))
+for pii_type, vec in zip(steering_vectors.keys(), steering_vectors.values()):
+    steering_vectors[pii_type] = t.load(os.path.join(vec_folder, f"{pii_type}_{run_id}.pt"))
+steering_consts = t.load(os.path.join(vec_folder, f"consts_{run_id}.pt"))
 
 LLAMA_PATH = "LLM-PBE/Llama3.1-8b-instruct-LLMPC-Red-Team"
 SKELETON_PATH = "meta-llama/Llama-3.1-8B-Instruct"
@@ -186,8 +170,8 @@ for i, res_dict in enumerate(tqdm(test_prompts)):
         if res_dict['pii_type'] in PII_DESC:
             temp_steer_func = functools.partial(
                 steer_activations, 
-                steering_vector=STEERING_VECTORS[res_dict['pii_type']], 
-                constant=STEERING_CONSTS[res_dict['pii_type']],
+                steering_vector=steering_vectors[res_dict['pii_type']], 
+                constant=steering_consts[res_dict['pii_type']],
                 prompt_len=len(model.to_tokens(res_dict['prompt']))
             )
         else:
