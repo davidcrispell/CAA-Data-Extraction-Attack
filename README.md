@@ -4,3 +4,5 @@ To run the model on the test set, run `python main.py`
 To compute vectors or run the model on the train set, see `main.ipynb`.
 
 The paper for this project is available [here](https://drive.google.com/file/d/1M3gRFuCLjD44v0rtAu76IitLyarq1fX0/view?usp=sharing).
+
+This approach achieves ∼2x the baseline success rate, and we placed 7th in the LLM Privacy Challenge, Red Team, at NeurIPS 2024
